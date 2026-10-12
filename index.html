@@ -1,0 +1,294 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>BountyBoard — Open Bounties on BOT Chain</title>
+<style>
+:root{--bg:#0e0a0a;--fg:#f6efef;--mut:#ab9999;--line:#2b1f1f;--card:#171111;--acc:#f87171;--acc2:#fbd5d5;--onacc:#2b0808;--danger:#ef4444;--gold:#ffd166}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--bg);color:var(--fg);font-family:'Inter',system-ui,sans-serif;line-height:1.55;min-height:100vh}
+a{color:inherit;text-decoration:none}
+.mono{font-family:'Courier New',monospace}
+.wrap{max-width:1120px;margin:0 auto;padding:0 24px}
+nav{border-bottom:1px solid var(--line);position:sticky;top:0;z-index:50;background:rgba(14,10,10,.92);backdrop-filter:blur(8px)}
+.nav-in{display:flex;align-items:center;justify-content:space-between;height:60px}
+.logo{display:flex;align-items:center;gap:10px;font-weight:800;font-size:17px}
+.logo i{width:26px;height:26px;border-radius:6px;background:var(--acc);color:var(--onacc);display:inline-flex;align-items:center;justify-content:center;font-size:16px;font-style:normal}
+.nav-links{display:flex;align-items:center;gap:18px;font-size:13.5px;color:var(--mut)}
+.btn{font-weight:600;font-size:13.5px;padding:10px 18px;border-radius:8px;border:none;cursor:pointer;min-height:40px}
+.btn-a{background:var(--acc);color:var(--onacc)}
+.btn-a:hover{background:var(--acc2)}
+.btn-g{background:transparent;color:var(--fg);border:1px solid var(--line)}
+.btn-g:hover{border-color:var(--acc)}
+.btn-d{background:transparent;color:var(--danger);border:1px solid rgba(239,68,68,.5)}
+.btn-sm{padding:7px 13px;font-size:12.5px;min-height:34px}
+select#netSel{background:var(--card);border:1px solid var(--line);border-radius:8px;font-size:12px;padding:9px;color:var(--fg)}
+.hero{padding:56px 0 30px}
+.hero h1{font-size:clamp(30px,5vw,52px);font-weight:800;letter-spacing:-.02em}
+.hero h1 span{color:var(--acc)}
+.hero p{color:var(--mut);max-width:640px;margin-top:12px;font-size:16px}
+.ticker{display:grid;grid-template-columns:repeat(3,1fr);border:1px solid var(--line);border-radius:12px;overflow:hidden;margin:8px 0 26px}
+.ticker .cell{padding:16px 24px;display:flex;justify-content:space-between;gap:12px}
+.ticker .cell + .cell{border-left:1px solid var(--line)}
+.ticker .k{font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:var(--mut)}
+.ticker .v{font-size:15px;font-weight:700;color:var(--acc2)}
+.grid{display:grid;grid-template-columns:1.5fr 1fr;gap:18px;align-items:start;padding-bottom:48px}
+@media(max-width:860px){.grid{grid-template-columns:1fr}.ticker{grid-template-columns:1fr}.ticker .cell + .cell{border-left:none;border-top:1px solid var(--line)}}
+.panel{background:var(--card);border:1px solid var(--line);border-radius:14px;margin-bottom:18px;overflow:hidden}
+.panel-head{padding:14px 18px;border-bottom:1px solid var(--line);font-size:11.5px;font-weight:700;letter-spacing:.16em;text-transform:uppercase;color:var(--mut)}
+.row{display:grid;grid-template-columns:130px 1fr auto;gap:12px;align-items:center;padding:13px 18px;border-bottom:1px solid var(--line)}
+.row:last-child{border-bottom:none}
+.row label{font-size:11.5px;letter-spacing:.08em;text-transform:uppercase;color:var(--mut)}
+.row input{width:100%;background:var(--bg);border:1px solid var(--line);border-radius:8px;color:var(--fg);font-size:14px;padding:10px 12px;min-height:42px;font-family:'Inter',sans-serif}
+.row input.mono{font-family:'Courier New',monospace;font-size:12.5px}
+.kv{display:flex;justify-content:space-between;padding:11px 18px;border-bottom:1px solid var(--line);font-size:13.5px;color:var(--mut);gap:10px}
+.kv:last-child{border-bottom:none}
+.kv b{color:var(--fg);font-weight:600;text-align:right}
+.hint{padding:10px 18px 16px;font-size:12.5px;color:var(--mut)}
+.msg{display:none;padding:8px 18px 14px;font-size:12.5px;color:var(--acc2)}
+.bnty{padding:16px 18px;border-bottom:1px solid var(--line)}
+.bnty:last-child{border-bottom:none}
+.bnty-top{display:flex;justify-content:space-between;gap:10px;align-items:center;margin-bottom:6px;flex-wrap:wrap}
+.bnty-top b{font-size:15.5px}
+.tag{font-size:10px;letter-spacing:.1em;text-transform:uppercase;padding:3px 9px;border-radius:5px;border:1px solid;white-space:nowrap}
+.tag.live{color:var(--acc2);border-color:rgba(248,113,113,.5)}
+.tag.done{color:var(--gold);border-color:rgba(255,209,102,.5)}
+.tag.reclaim{color:var(--mut);border-color:var(--line)}
+.bnty-meta{font-size:12.5px;color:var(--mut);display:flex;gap:14px;flex-wrap:wrap;margin-bottom:10px}
+.bnty-meta .mono{color:var(--fg);font-size:12px}
+.subs{font-size:12.5px;color:var(--mut);margin-bottom:10px}
+.subs .mono{color:var(--fg);font-size:11.5px}
+.bnty-actions{display:flex;gap:8px;flex-wrap:wrap}
+.bnty-actions input{background:var(--bg);border:1px solid var(--line);border-radius:8px;color:var(--fg);font-size:12.5px;padding:8px 10px;font-family:'Courier New',monospace}
+.bnty-actions input.addr{width:150px}
+.bnty-actions input.uri{flex:1;min-width:180px}
+footer{padding:36px 0;border-top:1px solid var(--line);color:var(--mut);font-size:13px}
+footer a{color:var(--acc2)}
+.proof{max-width:440px;margin-top:18px;padding:16px 18px;background:var(--card);border:1px solid var(--line);border-radius:8px}
+.proof-title{font-family:ui-monospace,'Courier New',monospace;font-size:11px;font-weight:600;color:var(--acc);letter-spacing:.12em;text-transform:uppercase;margin-bottom:12px}
+.proof-grid{display:grid;grid-template-columns:auto 1fr;gap:6px 16px;font-family:ui-monospace,'Courier New',monospace;font-size:12px;color:var(--mut)}
+.proof-grid .val{color:var(--acc);overflow-wrap:anywhere}
+.proof-links{display:flex;gap:14px;flex-wrap:wrap;margin-top:12px}
+.proof-link{font-family:ui-monospace,'Courier New',monospace;font-size:11px;color:var(--acc);border-bottom:1px solid var(--acc);text-decoration:none}
+</style>
+</head>
+<body>
+<nav><div class="wrap nav-in">
+<div class="logo"><i>◎</i>BountyBoard</div>
+<div class="nav-links">
+<select id="netSel"><option value="677" selected>Mainnet 677</option><option value="968">Testnet 968</option></select>
+<button class="btn btn-a" id="connectBtn">Connect wallet</button>
+</div>
+</div></nav>
+
+<div class="wrap">
+<div class="hero">
+<h1>Best work <span>wins.</span></h1>
+<p>Open bounties with BOT locked on-chain. Hunters compete, the poster awards a submitter, everyone else walks away. No award by deadline? The poster reclaims — nothing stuck, ever.</p>
+</div>
+
+<div class="ticker">
+<div class="cell"><span class="k">Bounties</span><span class="v" id="tBnty">—</span></div>
+<div class="cell"><span class="k">Open</span><span class="v" id="tOpen">—</span></div>
+<div class="cell"><span class="k">Your BOT</span><span class="v" id="tBal">—</span></div>
+</div>
+
+<div class="grid">
+<div>
+<div class="panel">
+<div class="panel-head">Bounties</div>
+<div id="bntyList"><div class="hint">Loading bounties…</div></div>
+</div>
+</div>
+
+<div>
+<div class="panel">
+<div class="panel-head">Post a bounty</div>
+<div class="row"><label>Spec URI</label><input id="pSpec" class="mono" placeholder="ipfs://…"></div>
+<div class="row"><label>Reward (BOT)</label><input id="pReward" type="number" step="any" placeholder="1.0"></div>
+<div class="row" style="border-bottom:none"><label>Days</label><input id="pDays" type="number" placeholder="7"></div>
+<div class="row" style="border-bottom:none;grid-template-columns:1fr auto"><span class="hint" style="padding:0">Reward locks on posting.</span><button class="btn btn-a" id="postBtn">Post →</button></div>
+<div class="msg" id="bMsg"></div>
+</div>
+
+<div class="panel">
+<div class="panel-head">How it works</div>
+<div class="kv"><span>Format</span><b>open competition</b></div>
+<div class="kv"><span>Award</span><b>poster picks a submitter</b></div>
+<div class="kv"><span>Anti-scam</span><b>winner must have submitted</b></div>
+<div class="kv"><span>Expiry</span><b>poster reclaims, nothing stuck</b></div>
+<div class="hint">NodeWorks is for claimed jobs; this is for winner-takes-all contests — audits, logos, memes.</div>
+</div>
+</div>
+</div>
+
+<footer>
+<p>BountyBoard — open bounties on BOT Chain. May the best hunter win.</p>
+<div class="proof">
+<div class="proof-title">Proof on BOT Mainnet</div>
+<div class="proof-grid">
+<span>Chain ID</span><span class="val">677</span>
+<span>Contract</span><span class="val">0x3A4AA44F0174CCa92532F51D121A67825bb61baC</span>
+</div>
+<div class="proof-links">
+<a href="https://botchain.ai" target="_blank" rel="noopener" class="proof-link">BOT Chain Website &#8599;</a>
+<a href="https://scan.botchain.ai/" target="_blank" rel="noopener" class="proof-link">BOTScan Explorer &#8599;</a>
+</div>
+</div>
+</footer>
+</div>
+
+<script type="importmap">
+{"imports":{"ethers":"https://esm.sh/ethers@6.13.2","@reown/appkit":"https://esm.sh/@reown/appkit@1.8.21","@reown/appkit-adapter-ethers":"https://esm.sh/@reown/appkit-adapter-ethers@1.8.21"}}
+</script>
+<script type="module">
+import { ethers } from 'ethers';
+import { createAppKit } from '@reown/appkit';
+import { EthersAdapter } from '@reown/appkit-adapter-ethers';
+
+const PROJECT_ID = 'f018499b1e4a94d961ab67aeeeff3254';
+const CONTRACTS = {
+  677: { bb: '0x3A4AA44F0174CCa92532F51D121A67825bb61baC' },
+  968: { bb: '0xF49AF02491384bd53D92C3F610e9aa1FBFf90108' },
+};
+const BB_ABI = [
+  'function totalBounties() view returns (uint256)',
+  'function getBounty(uint256) view returns (address,uint256,uint64,string,bool,address,uint256)',
+  'function submission(uint256,uint256) view returns (address,string)',
+  'function post(string,uint64) payable returns (uint256)',
+  'function submit(uint256,string)',
+  'function award(uint256,address)',
+  'function reclaim(uint256)',
+];
+const $ = (id) => document.getElementById(id);
+let currentChainId = 677, account = null;
+
+const appkit = createAppKit({
+  adapters: [new EthersAdapter()],
+  networks: [{ id: 677, name: 'BOT Mainnet', nativeCurrency: { name: 'BOT', symbol: 'BOT', decimals: 18 }, rpcUrls: { default: { http: ['https://rpc.botchain.ai'] } } }, { id: 968, name: 'BOT Testnet', nativeCurrency: { name: 'BOT', symbol: 'BOT', decimals: 18 }, rpcUrls: { default: { http: ['https://rpc.bohr.life'] } } }],
+  projectId: PROJECT_ID,
+  features: { analytics: false },
+});
+async function getSigner() {
+  if (typeof appkit !== 'undefined' && appkit && typeof appkit.getWalletProvider === 'function') {
+    const wp = appkit.getWalletProvider('eip155') || appkit.getWalletProvider();
+    if (wp) return await new ethers.BrowserProvider(wp).getSigner();
+  }
+  throw new Error('Connect a wallet first');
+}
+function short(a) { return !a ? '—' : a.slice(0, 6) + '…' + a.slice(-4); }
+function esc(s) { return String(s).replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c])); }
+function msg(id, t, ok) {
+  const el = $(id); el.style.display = 'block';
+  el.style.color = ok === false ? 'var(--danger)' : 'var(--acc2)';
+  el.textContent = t;
+}
+async function provider() {
+  return new ethers.JsonRpcProvider(currentChainId === 968 ? 'https://rpc.bohr.life' : 'https://rpc.botchain.ai');
+}
+async function bbRead() {
+  const c = CONTRACTS[currentChainId];
+  if (!c) return null;
+  return new ethers.Contract(c.bb, BB_ABI, await provider());
+}
+function fmt(v) { try { return ethers.formatEther(v); } catch (e) { return String(v); } }
+function dt(ts) { try { return new Date(Number(ts) * 1000).toLocaleString(); } catch (e) { return '—'; } }
+async function refresh() {
+  const t = await bbRead();
+  if (!t) { $('bntyList').innerHTML = '<div class="hint">Switch chain above.</div>'; return; }
+  const n = Number(await t.totalBounties());
+  $('tBnty').textContent = n;
+  const now = Math.floor(Date.now() / 1000);
+  let open = 0;
+  const list = [];
+  for (let i = 0; i < n; i++) {
+    const b = await t.getBounty(i);
+    const subs = [];
+    for (let j = 0; j < Number(b[6]); j++) {
+      try { const s = await t.submission(i, j); subs.push({ hunter: s[0], uri: s[1] }); } catch (e) {}
+    }
+    list.push({ id: i, poster: b[0], reward: b[1], deadline: Number(b[2]), spec: b[3], awarded: b[4], winner: b[5], subs });
+    if (!b[4]) open++;
+  }
+  $('tOpen').textContent = open;
+  if (account) {
+    try { $('tBal').textContent = Number(ethers.formatEther(await (await provider()).getBalance(account))).toFixed(4) + ' BOT'; } catch (e) {}
+  }
+  if (!list.length) { $('bntyList').innerHTML = '<div class="hint">No bounties yet — post the first one →</div>'; return; }
+  const me = (account || '').toLowerCase();
+  $('bntyList').innerHTML = list.slice().reverse().map((b) => {
+    const expired = b.deadline <= now;
+    const isPoster = me && b.poster.toLowerCase() === me;
+    const status = b.awarded && b.winner !== ethers.ZeroAddress ? ['done', 'Awarded ' + short(b.winner)] : b.awarded ? ['reclaim', 'Reclaimed'] : expired ? ['reclaim', 'Expired'] : ['live', 'Open'];
+    return '<div class="bnty"><div class="bnty-top"><b>Bounty #' + b.id + ' · ' + fmt(b.reward) + ' BOT</b>'
+      + '<span class="tag ' + status[0] + '">' + status[1] + '</span></div>'
+      + '<div class="bnty-meta"><span>Spec <span class="mono">' + esc(b.spec.length > 42 ? b.spec.slice(0, 42) + '…' : b.spec) + '</span></span><span>Deadline <span class="mono">' + dt(b.deadline) + '</span></span><span>Hunters <span class="mono">' + b.subs.length + '</span></span></div>'
+      + (b.subs.length ? '<div class="subs">' + b.subs.map((s) => '<span class="mono">' + short(s.hunter) + '</span>').join(' · ') + '</div>' : '')
+      + '<div class="bnty-actions">'
+      + (!b.awarded && !expired ? '<input class="uri" id="s-' + b.id + '" placeholder="result URI"><button class="btn btn-a btn-sm" data-act="submit" data-id="' + b.id + '">Submit →</button>' : '')
+      + (!b.awarded && isPoster ? '<input class="addr" id="w-' + b.id + '" placeholder="winner 0x…"><button class="btn btn-g btn-sm" data-act="award" data-id="' + b.id + '">Award</button>' : '')
+      + (!b.awarded && expired && isPoster ? '<button class="btn btn-d btn-sm" data-act="reclaim" data-id="' + b.id + '">Reclaim</button>' : '')
+      + '</div></div>';
+  }).join('');
+}
+async function write(fn, args, value, okMsg) {
+  try {
+    const s = await getSigner();
+    const t = new ethers.Contract(CONTRACTS[currentChainId].bb, BB_ABI, s);
+    const tx = value !== undefined ? await t[fn](...args, { value }) : await t[fn](...args);
+    msg('bMsg', 'Sent: ' + tx.hash.slice(0, 18) + '… waiting…');
+    await tx.wait();
+    msg('bMsg', okMsg || 'Confirmed ✓');
+    await refresh();
+  } catch (e) {
+    msg('bMsg', 'Failed: ' + (e.shortMessage || e.reason || e.message || e).toString().slice(0, 160), false);
+  }
+}
+$('bntyList').addEventListener('click', async (e) => {
+  const b = e.target.closest('[data-act]'); if (!b) return;
+  const id = Number(b.dataset.id);
+  if (b.dataset.act === 'submit') {
+    const uri = $('s-' + id).value.trim();
+    if (!uri) { msg('bMsg', 'Result URI required.', false); return; }
+    await write('submit', [id, uri], undefined, 'Submitted ✓ good luck, hunter.');
+  } else if (b.dataset.act === 'award') {
+    const w = $('w-' + id).value.trim();
+    if (!/^0x[0-9a-fA-F]{40}$/.test(w)) { msg('bMsg', 'Valid winner address required (must be a submitter).', false); return; }
+    await write('award', [id, w], undefined, 'Awarded ✓ paid in full.');
+  } else if (b.dataset.act === 'reclaim') {
+    if (!confirm('Reclaim bounty #' + id + '? Only possible past deadline, unawarded.')) return;
+    await write('reclaim', [id], undefined, 'Reclaimed.');
+  }
+});
+$('postBtn').addEventListener('click', async () => {
+  const spec = $('pSpec').value.trim(), reward = $('pReward').value.trim();
+  const days = Number($('pDays').value.trim() || '0');
+  if (!spec || !reward || Number(reward) <= 0 || !(days > 0)) {
+    msg('bMsg', 'Spec URI + positive reward + days required.', false); return;
+  }
+  await write('post', [spec, BigInt(Math.round(days * 24))], ethers.parseEther(reward), 'Bounty posted ✓ hunters welcome.');
+});
+if ($('connectBtn')) {
+  appkit.subscribeAccount((a) => {
+    account = a.address || null;
+    $('connectBtn').textContent = account ? account.slice(0, 6) + '…' + account.slice(-4) : 'Connect wallet';
+    refresh();
+  });
+  appkit.subscribeNetwork((n) => {
+    if (n && n.chainId) { currentChainId = Number(n.chainId); const s = $('netSel'); if (s) s.value = String(currentChainId); }
+    refresh();
+  });
+  $('connectBtn').addEventListener('click', () => appkit.open());
+  if ($('netSel')) $('netSel').addEventListener('change', (e) => {
+    const id = Number(e.target.value);
+    try { appkit.switchNetwork({ id }); } catch (err) {}
+    currentChainId = id;
+    refresh();
+  });
+}
+refresh();
+setInterval(() => { if (!document.hidden) refresh(); }, 25000);
+</script>
+</body>
+</html>
