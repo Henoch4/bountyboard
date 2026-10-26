@@ -28,7 +28,7 @@ async function getSigner() {
   }
   throw new Error('Connect a wallet first');
 }
-let _t; function toast(m) { const t = $('toast'); t.textContent = m; t.classList.add('on'); clearTimeout(_t); _t = setTimeout(() => t.classList.remove('on'), 2800); }
+let _t; function toast(m) { const t = $('toast'); t.textContent = m; t.classList.add('on'); clearTimeout(_t); _t = setTimeout(() => t.classList.remove('on'), 4000); }
 function short(a) { return !a ? '—' : a.slice(0, 6) + '…' + a.slice(-4); }
 function fmt(n) { return Number(n).toLocaleString('en-US'); }
 function esc(s) { return String(s).replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c])); }
